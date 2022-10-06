@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using WebApplication4.Data;
 using WebApplication4.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);   
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -20,7 +20,14 @@ builder.Services.AddControllersWithViews();
 
 
 var app = builder.Build();
+var configuration = app.Services.GetService<IConfiguration>();
+var hosting = app.Services.GetService<IWebHostEnvironment>();
 
+if (hosting.IsDevelopment())
+{
+    var secrets = configuration.GetSection("Secrets").Get<AppSecrets>();
+    DbInitializer.appSecrets = secrets;
+}
 using (var scope = app.Services.CreateScope())
 {
     DbInitializer.SeedUsersAndRoles(scope.ServiceProvider).Wait();
